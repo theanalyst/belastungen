@@ -1,2 +1,2 @@
 add_executable(eg eg.cpp)
-target_link_libraries(eg Boost::system)
+target_link_libraries(eg Boost::system Threads::Threads)

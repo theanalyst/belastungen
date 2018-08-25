@@ -10,5 +10,7 @@ project(belastungen)
 hunter_add_package(Boost COMPONENTS system)
 find_package(Boost CONFIG REQUIRED system)
 set(CMAKE_CXX_FLAGS
-  "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -lpthread")
+  "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 add_subdirectory(src)
