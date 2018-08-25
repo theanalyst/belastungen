@@ -11,5 +11,4 @@ hunter_add_package(Boost COMPONENTS system)
 find_package(Boost CONFIG REQUIRED system)
 set(CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -lpthread")
-add_executable(eg eg.cpp)
-target_link_libraries(eg Boost::system)
+add_subdirectory(src)
