@@ -6,6 +6,8 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/version.hpp>
+#include <boost/asio/spawn.hpp>
+#include <boost/asio/strand.hpp>
 
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
@@ -22,38 +24,37 @@ public:
 	port(_port), num_conn(_num_conn.value_or(100)) {};
     int get_request(const std::string& target); 
 };
+
 template <typename str_type>
 int BaseClient<str_type>::get_request(const std::string& target){
-    http::request<http::string_body> req{http::verb::get, target, 11};
-    tcp::resolver resolver{ioc};
-    tcp::socket socket{ioc};
-
-    // Look up the domain name
-    auto const results = resolver.resolve(endpoint, port);
-
-    // Make the connection on the IP address we get from a lookup
-    boost::asio::connect(socket, results.begin(), results.end());
-
-    req.set(http::field::host, endpoint);
-    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
     
-    http::write(socket, req);
+    tcp::resolver resolver {ioc};
 
-    boost::beast::flat_buffer buffer;
-    http::response<http::dynamic_body> res;
+    auto const results = resolver.resolve(endpoint, port);
+    tcp::socket socket {ioc};
 
-    http::read(socket, buffer, res);
-
-    std::cout << res << std::endl;
-    boost::system::error_code ec;
-    socket.shutdown(tcp::socket::shutdown_both, ec);
-
-    // not_connected happens sometimes
-    // so don't bother reporting it.
-    //
-    if(ec && ec != boost::system::errc::not_connected)
+    try {
+	boost::asio::spawn(ioc, [this, results,target, &socket](boost::asio::yield_context yield)
+			   {
+			       boost::asio::async_connect(socket, results.begin(), results.end(), yield);			       
+			       http::request<http::string_body> req{http::verb::get, target, 11};
+			       req.set(http::field::host, endpoint);
+			       req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+			       http::async_write(socket, req, yield);
+			       boost::beast::flat_buffer buffer;
+			       http::response<http::dynamic_body> res;
+			       http::async_read(socket, buffer, res, yield);
+			       socket.shutdown(tcp::socket::shutdown_both);
+			       std::cout << res << std::endl;
+			   });
+    } catch (boost::system::error_code& ec) {
+	std::cout << "connect error  " << ec.message() << std::endl;
+	socket.shutdown(tcp::socket::shutdown_both, ec);
 	return -1;
+    }
 
+
+    ioc.run();
     return 0;	
 } 
 
