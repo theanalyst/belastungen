@@ -7,8 +7,8 @@ HunterGate(
 )
 
 project(belastungen)
-hunter_add_package(Boost COMPONENTS system)
-find_package(Boost CONFIG REQUIRED system)
+hunter_add_package(Boost COMPONENTS system coroutine context thread)
+find_package(Boost CONFIG REQUIRED system coroutine context thread)
 set(CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 set(THREADS_PREFER_PTHREAD_FLAG ON)
