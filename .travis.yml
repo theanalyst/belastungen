@@ -9,6 +9,7 @@ matrix:
           packages:
             - g++-7
             - cmake
+            - ccache
       env:
         - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
 
@@ -18,3 +19,7 @@ before_install:
 script:
   - mkdir -p build && cd build && cmake ..
   - make 
+cache:
+  - ccache
+  directories:
+    - $HOME/.hunter
