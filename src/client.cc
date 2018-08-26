@@ -62,13 +62,15 @@ using Client = BaseClient<std::string>;
 int main(int argc, char *argv[])
 {
     
-    if(argc != 3 || argc != 4)
+    if(argc != 2 && argc != 3)
     {
 	std::cerr << "Usage: client <host> <port> [<num_connections>(100)]";
+	std::cerr << "argc : "<< argc << std::endl;
+	exit(-1);
     }
-    std::optional<int> nc = argc == 4 ? std::optional<int>(std::stoi(argv[3]))
+    std::optional<int> nc = argc == 3 ? std::optional<int>(std::stoi(argv[2]))
 	: std::nullopt;
-    Client client {std::move(argv[1]),argv[2], nc};
+    Client client {argv[1],argv[2], nc};
     client.get_request("/");
     return 0;
 }
