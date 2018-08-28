@@ -17,7 +17,7 @@ before_install:
   - eval "${MATRIX_EVAL}"
  
 script:
-  - mkdir -p build && cd build && cmake ..
+  - sh build.sh
   - make 
 cache:
   - ccache
