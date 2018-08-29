@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <thread>
+#include <vector>
+#include <algorithm>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -8,7 +11,6 @@
 #include <boost/beast/version.hpp>
 #include <boost/asio/spawn.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/asio/thread_pool.hpp>
 #include <boost/thread/thread.hpp>
 
 using tcp = boost::asio::ip::tcp;
@@ -57,17 +59,17 @@ int BaseClient<str_type>::get_request(const std::string& target){
 //std::cout << res << std::endl;
 			       });    
 	} 
-    } catch (boost::system::error_code& ec) {
-	std::cout << "connect error  " << ec.message() << std::endl;
+    } catch (std::exception& ec) {
+	std::cout << "connect error  " << ec.what() << std::endl;
     }
     std::cout << "running " << std::endl;
-    // boost::thread_group worker_threads;
-    // for (int i=0; i<1;i++){
-    // 	worker_threads.create_thread(boost::bind(&boost::asio::io_context::run, &ioc));
-    // }
-    // worker_threads.join_all();
+
     try {
-	ioc.run();
+	std::vector <std::thread> thread_pool(std::thread::hardware_concurrency());
+	for (auto i = 0; i < thread_pool.size(); i++){
+	    thread_pool[i] = std::thread([this](){ioc.run();});
+	}
+	std::for_each(thread_pool.begin(),thread_pool.end(), [](std::thread &t) { t.join(); });
 //	pool.join();
     } catch (const std::exception& ec) {
 	std::cout << "run error" << ec.what() << std::endl;
