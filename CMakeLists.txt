@@ -17,5 +17,6 @@ endif(CCACHE_FOUND)
 set(CMAKE_CXX_FLAGS
   "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 find_package(Threads REQUIRED)
 add_subdirectory(src)
